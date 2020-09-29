@@ -50,3 +50,32 @@ public class Trie<CollectionType: Collection>
     }
   }
 }
+
+public extension Trie where CollectionType: RangeReplaceableCollection {
+  func collections(startingWith prefix: CollectionType) -> [CollectionType] {
+    var current = root
+    for element in prefix {
+      guard let child = current.children[element] else {
+        return []
+      }
+      current = child
+    }
+    return collections(startingWith: prefix, after: current)
+  }
+
+  private func collections(startingWith prefix: CollectionType,
+                          after node: Node) -> [CollectionType] {
+    var results: [CollectionType] = []
+    if node.isTerminating {
+      results.append(prefix)
+    }
+
+    for child in node.children.values {
+      var prefix = prefix
+      prefix.append(child.key!)
+      results.append(contentsOf: collections(startingWith: prefix,
+                                            after: child))
+    }
+    return results
+  }
+}
