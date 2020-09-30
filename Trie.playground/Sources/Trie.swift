@@ -1,10 +1,17 @@
 import Foundation
 
-public class Trie<CollectionType: Collection>
+public class Trie<CollectionType: Collection & Hashable>
   where CollectionType.Element: Hashable {
 
   public typealias Node = TrieNode<CollectionType.Element>
 
+  public private(set) var collections: Set<CollectionType> = []
+  public var count: Int {
+    collections.count
+  }
+  public var isEmpty: Bool {
+    collections.isEmpty
+  }
   private let root = Node(key: nil, parent: nil)
 
   public init() {  }
@@ -17,7 +24,12 @@ public class Trie<CollectionType: Collection>
       }
       current = current.children[element]!
     }
-    current.isTerminating = true
+    if current.isTerminating {
+      return
+    } else {
+      current.isTerminating = true
+      collections.insert(collection)
+    }
   }
 
   public func contains(_ collection: CollectionType) -> Bool {
@@ -43,6 +55,7 @@ public class Trie<CollectionType: Collection>
       return
     }
     current.isTerminating = false
+    collections.remove(collection)
     while let parent = current.parent,
       current.children.isEmpty && !current.isTerminating {
         parent.children[current.key!] = nil
